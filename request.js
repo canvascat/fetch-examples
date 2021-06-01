@@ -167,10 +167,9 @@ module.exports = async (method, url, data, options) => {
     answer.status =
       100 < answer.status && answer.status < 600 ? answer.status : 400;
     if (answer.status === 200) return answer;
-    else throw answer;
   } catch (error) {
     answer.status = 502;
     answer.body = { code: 502, msg: error };
-    throw answer;
   }
+  throw answer;
 }
