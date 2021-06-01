@@ -10,8 +10,8 @@
 <body>
   <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.20.0-0/axios.min.js"></script>
   <script>
-    const phone = '15527389531' // 这里填手机号
-    const password = '984245844' // 这里填密码
+    const phone = '15527389531'
+    const password = '984245844'
     const fileUpdateTime = {}
     let cookieToken = ''
     if (!phone || !password) {
@@ -51,7 +51,25 @@
         })
       }
     }
-    main()
+    main();
+    (async () => {
+      const res = await fetch(`/homepage/block/page`, {
+        method: 'POST',
+        body: '{}'
+      });
+      let cursor = ''
+      console.log(res.data.data)
+      if (res.data.data.hasMore) {
+        cursor = res.data.data.cursor
+      }
+      const res2 = await fetch(`/homepage/block/page`, {
+        method: 'POST',
+        body: JSON.stringify(),
+        headers: {
+          'Content-Type': 'application/json;charset=UTF-8'
+        }
+      });
+    })();
   </script>
 </body>
 

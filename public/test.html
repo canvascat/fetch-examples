@@ -9,54 +9,39 @@
 </head>
 
 <body>
+  <form>
+    <p><input id="phone" type="text" placeholder="phone"></p>
+    <p><input id="password" type="password" placeholder="password"></p>
+  </form>
   <p>请在控制台看结果</p>
-  <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
-  <script src="https://cdn.bootcss.com/axios/0.18.0/axios.min.js"></script>
+  <script src="https://unpkg.com/axios@0.21.1/dist/axios.min.js"></script>
   <script>
-    const phone = ''
-    const password = ''
+    const phone = '15527389531'
+    const password = '984245844'
+    const md5_password = '6b7fccea24604a5a52d33d5b7a101f79'
     if (!phone || !password) {
-      const msg = '请设置你的手机号码和密码'
-      alert(msg)
-      throw new Error(msg)
-    }
-    $.ajax({
-      url: `/login/cellphone?phone=${phone}&password=${password}`,
-      xhrFields: {
-        withCredentials: true, //关键
-      },
-      success: function (data) {
-        console.log(data)
-        $.ajax({
-          url: `/recommend/resource `,
-          xhrFields: {
-            withCredentials: true, //关键
-          },
-          success: function (data) {
-            console.log(data)
-          },
-          error: function (err) {
-            console.log(err)
-          },
-        })
-      },
-      error: function (err) {
-        console.log(err)
-      },
-    })
-
-    axios({
-      url: `/login/cellphone?phone=${phone}&password=${password}`,
-      withCredentials: true, //关键
-    }).then(function (res) {
-      console.log(res.data)
-      axios({
-        url: `/recommend/resource`,
-        withCredentials: true, //关键
-      }).then(function (res) {
-        console.log(res.data)
+      alert('请设置你的手机号码和密码')
+    } else {
+      // fetch('/personalized?limit=10', {
+      //   credentials: 'include'
+      // })
+      axios.get('/login/cellphone', {
+        params: { phone, password },
+        withCredentials: true
       })
-    })
+      // axios({
+      //   url: `/login/cellphone?phone=${phone}&password=${password}`,
+      //   withCredentials: true, //关键
+      // }).then((res) => {
+      //   console.log(res.data)
+      //   // axios({
+      //   //   url: `/recommend/resource`,
+      //   //   withCredentials: true, //关键
+      //   // }).then(function (res) {
+      //   //   console.log(res.data)
+      //   // })
+      // })
+    }
   </script>
 </body>
 
