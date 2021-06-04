@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>网易云音乐 API</title>
+  <script src="https://unpkg.com/axios@0.21.1/dist/axios.min.js"></script>
 </head>
 
 <body>
@@ -14,9 +15,10 @@
   <a href="https://neteasecloudmusicapi.vercel.app">查看文档</a>
   <h2>例子:</h2>
   <ul>
-    <li><a href="/search?keywords=海阔天空">搜索</a></li>
+    <li id="search"><input type="text" value="海阔天空"><button>搜索</button></li>
     <li><a href="/comment/music?id=186016&limit=1">歌曲评论</a></li>
     <li><a href="/dj/program?rid=336355127">电台节目</a></li>
+    <br>
     <li><a href="/basic-fetch/index.html">basic-fetch</a></li>
     <li><a href="/fetch-array-buffer/index.html">fetch-array-buffer</a></li>
     <li><a href="/fetch-json/index.html">fetch-json</a></li>
@@ -31,22 +33,10 @@
     <li><a target="_blank" href="/test.html">test</a></li>
   </ul>
   <style>
-    html,
     body {
-      height: 100vh;
-      width: 100vw;
-      margin: 0;
-      padding: 0;
-      background: #ffffff;
       text-align: center;
-      margin-top: 30px;
-      overflow: hidden;
-    }
-
-    * {
       color: rgb(100, 100, 100);
     }
-
     a {
       color: #42b983;
     }
@@ -57,10 +47,21 @@
     }
 
     ul {
-      margin-left: -40px;
+      list-style: none;
+      padding-left: 0;
       line-height: 30px;
     }
   </style>
 </body>
+<script>
+  document.querySelector('#search > button').addEventListener('click', (e) => {
+    console.log(this, e.path[0].nextSibling, e.path[0].previousSibling);
+    const val = e.path[0].previousSibling.value.trim();
+    if (!val) return alert('请输入搜索内容');
+    fetch(`/search?keywords=${val}`)
+      .then(response => response.json())
+      .then(console.info);
+  })
+</script>
 
 </html>

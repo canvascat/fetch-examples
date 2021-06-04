@@ -2,7 +2,6 @@ const fs = require('fs');
 const path = require('path');
 const { promisify } = require('util');
 const express = require('express');
-const bodyParser = require('body-parser');
 const request = require('./request');
 const packageJSON = require('NeteaseCloudMusicApi/package.json');
 const exec = require('child_process').exec;
@@ -20,16 +19,20 @@ const app = express();
 
 // CORS & Preflight request
 app.use((req, res, next) => {
-  if (req.path !== '/' && !req.path.includes('.')) {
-    res.set({
-      'Access-Control-Allow-Credentials': true,
-      'Access-Control-Allow-Origin': req.headers.origin || '*',
-      'Access-Control-Allow-Headers': 'X-Requested-With,Content-Type',
-      'Access-Control-Allow-Methods': 'PUT,POST,GET,DELETE,OPTIONS',
-      'Content-Type': 'application/json; charset=utf-8',
-    })
+  if (req.method === 'OPTIONS') {
+    res.status(204).end()
+  } else {
+    if (req.path !== '/' && !req.path.includes('.')) {
+      res.set({
+        'Access-Control-Allow-Credentials': true,
+        'Access-Control-Allow-Origin': req.headers.origin || '*',
+        'Access-Control-Allow-Headers': 'X-Requested-With,Content-Type',
+        'Access-Control-Allow-Methods': 'PUT,POST,GET,DELETE,OPTIONS',
+        'Content-Type': 'application/json; charset=utf-8',
+      })
+    }
+    next()
   }
-  req.method === 'OPTIONS' ? res.status(204).end() : next()
 })
 
 // cookie parser
@@ -42,16 +45,16 @@ app.use((req, res, next) => {
 });
 
 // body parser
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
 app.use(fileUpload());
 
 // static
 app.use(express.static(path.join(__dirname, 'public')));
 
-// cache
-app.use(cache('2 minutes', (req, res) => res.statusCode === 200));
+// cache 60000ms
+app.use(cache(60000, (req, res) => res.statusCode === 200));
 // router
 const special = {
   'daily_signin.js': '/daily_signin',
@@ -61,7 +64,11 @@ const special = {
 // require('./node_modules/NeteaseCloudMusicApi/module/')
 // require.context('NeteaseCloudMusicApi/module/', false, /\.js$/);
 const MODULE_PATH = path.join(__dirname, 'node_modules/NeteaseCloudMusicApi/module/');
-
+// app.post('/sum', (req, res) => {
+//   console.log('[OK]', decodeURIComponent(req.originalUrl), typeof req.body);
+//   const sum = req.body.reduce((a, b) => a + b, 0);
+//   res.status(200).send({ sum });
+// });
 (async () => {
   const files = await promisify(fs.readdir)(MODULE_PATH);
   for (let i = 0; i < files.length; i++) {
@@ -70,6 +77,7 @@ const MODULE_PATH = path.join(__dirname, 'node_modules/NeteaseCloudMusicApi/modu
     const route = file in special ? special[file] : '/' + file.replace(/\.js$/i, '').replace(/_/g, '/');
     const question = require(path.join(MODULE_PATH, file));
     app.use(route, async (req, res) => {
+      console.log(req.headers['user-agent']);
       [req.query, req.body].forEach((item) => {
         if (typeof item.cookie === 'string') {
           item.cookie = cookieToJson(decodeURIComponent(item.cookie))
@@ -94,7 +102,30 @@ const MODULE_PATH = path.join(__dirname, 'node_modules/NeteaseCloudMusicApi/modu
   }
 
   const { PORT: port = 3000, HOST: host = '' } = process.env;
-  app.server = app.listen(port, host, () => {
+  /** @type {import('http').Server} */
+  const server = app.server = app.listen(port, host, () => {
     console.log(`server running @ http://${host ? host : 'localhost'}:${port}`)
   });
+  app.server = server;
 })();
+
+// exports.startServer = () => {
+//   return new Promise((resolve, reject) => {
+//     const onError = e => {
+//       if (e.code === 'EADDRINUSE') {
+//         app.listen(++port, host, () => {
+//           console.log(`server running @ http://${host ? host : 'localhost'}:${port}`)
+//         })
+//       } else {
+//         reject(e)
+//       }
+//     }
+//     app.on('error', onError)
+//     app.listen(port, host, () => {
+//       app.off('error', onError)
+//       console.log(`server running @ http://${host ? host : 'localhost'}:${port}`)
+//       resolve()
+//       app.
+//     })
+//   })
+// }
